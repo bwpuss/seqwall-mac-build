@@ -1,0 +1,35 @@
+name: macOS .app build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install pillow pyinstaller
+
+      - name: Build mac .app
+        run: |
+          pyinstaller --onefile --windowed --name "SequenceWall_Mac" seq_wall_ultra_nav_sync_fix.py
+
+      - name: Package .app
+        run: |
+          cd dist
+          ditto -c -k --sequesterRsrc --keepParent "SequenceWall_Mac.app" "SequenceWall_Mac.zip"
+
+      - name: Upload .app
+        uses: actions/upload-artifact@v4
+        with:
+          name: SequenceWall_Mac
+          path: dist/SequenceWall_Mac.zip
